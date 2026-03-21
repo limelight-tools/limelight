@@ -1,0 +1,34 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: macos-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Build App Bundle
+        run: make app
+
+      - name: Zip App Bundle
+        run: |
+          # Apps are folders in macOS, so we must zip them for distribution
+          zip -r Limelight.zip Limelight.app
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: Limelight.zip
+          name: Release ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
